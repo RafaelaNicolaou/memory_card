@@ -1,0 +1,101 @@
+from pygame import *
+
+class GameSprite(sprite.Sprite):
+    def __init__(self,image_file, w, h, x, y):
+        super().__init__()
+
+        print('Initializing gamesprite...'+image_file)
+
+        self.width = w
+        self.height = h
+        self.image = image.load(image_file)
+        self.image = transform.scale(self.image, (self.width, self.height))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def show(self, window):
+        window.blit(self.image,(self.rect.x, self.rect.y))
+
+class Player(GameSprite):
+
+    def __init__(self, image_file, w, h, x1, y1):
+        super().__init__(image_file, w, h, x1, y1)
+
+        print('Initializing player...')
+        self.rocket_x = self.rect.x
+        self.bullets = sprite.Group()
+        self.num_fire = 0
+        self.rel_time = False
+
+    def Player_con(self):
+        keys_pressed = key.get_pressed()
+        #creating the controles
+        if keys_pressed[K_LEFT] and self.rect.x > 5:
+            self.rect.x -= 1
+        if keys_pressed[K_RIGHT] and self.rect.x < 595:
+            self.rect.x += 1
+        if keys_pressed[K_SPACE]:
+            self.bullets.add(Bullet("bullet.png", 10, 30, self.rect.centerx, self.rect.centery))
+            if self.num_fire <= 5:
+                self.num_fire = self.num_fire + 1
+                print(self.num_fire)
+            else:
+                self.num_fire = 0
+                rel_time = True
+
+            if self.rel_time == True:
+                window.blit(rel_txt, (100, 40))
+                time.sleep(3)
+                self.rel_time = False
+                    
+lost = 0
+shot = 0
+class Enemy(GameSprite):
+    
+    def __init__(self, image_file, w, h, x, y):
+        super().__init__(image_file, w, h, x, y)
+
+        print("In Enemy class")
+        self.iteration = 0
+        self.direction = -1
+        self.speed = randint(1, 5)
+        print("Speed: ",self.speed)
+
+    def update(self):
+        global lost
+
+        self.iteration = (self.iteration + 1)
+
+        if self.iteration >= 15/self.speed:
+            self.rect.y += 1
+            direction = randint(-1,1)
+            self.rect.x += direction*randint(1,5)
+            self.iteration = 0
+        
+        if self.direction == 1:
+            self.rect.x += randint(1, 10)
+        
+        if self.rect.y == 500:
+            self.rect.y += randint(1, 10)
+            self.rect.y = 0
+            lost = lost + 1
+
+#backgound
+back = (0, 255, 255)
+wind_width = 600
+wind_height = 500
+window = display.set_mode((wind_width, wind_height))
+window.fill(back)
+
+clock = time.Clock()
+FPS = 60
+game = True
+
+while game:
+    for e in event.get():
+        if e.type == QUIT:
+            game = False
+
+    display.update
+    clock.tick(FPS)
